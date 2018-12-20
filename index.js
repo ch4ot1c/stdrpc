@@ -1,53 +1,58 @@
 const axios = require("axios");
 
 module.exports = function stdrpc(_config) {
-	if(typeof _config !== "object")
-		throw new Error("Expected 'config' to be an object");
+        if (typeof _config !== "object")
+                throw new Error("Expected 'config' to be an object");
 
-	const config = {
-		url: "http://localhost:8332",
-		methodTransform: a => a,
-		..._config
-	};
+        const config = {
+                url: "http://localhost:8332",
+                methodTransform: a => a,
+                ..._config
+        };
 
-	return new Proxy({}, {
-		set(target, method, handler) {
-			target[method] = handler; // allow overwriting of methods for testing
-		},
+        return new Proxy({}, {
+                set(target, method, handler) {
+                        target[method] = handler; // allow overwriting of methods for testing
+                },
 
-		has() {
-			return true; // for sinon spies/stubs testing
-		},
+                has() {
+                        return true; // for sinon spies/stubs testing
+                },
 
-		get(target, method) {
-			if(typeof target[method] === "function")
-				return target[method];
+                get(target, method) {
+                        if (typeof target[method] === "function")
+                                return target[method];
 
-			return async (...params) => {
-				method = config.methodTransform(method);
+                        return async (params) => {
+                                method = config.methodTransform(method);
 
-				const requestData = {
-					jsonrpc: "2.0",
-					method,
-					params,
-					id: Date.now()
-				};
+                                let requestData = []
+                                for (let p of params) {
+                                        requestData = [{
+                                                jsonrpc: "2.0",
+                                                method,
+                                                p,
+                                                id: Date.now()
+                                        }, ...requestData];
+                                }
 
-				const requestConfig = {};
+                                const requestConfig = {};
 
-				if(typeof config.username === "string" && typeof config.password === "string")
-					requestConfig.auth = {
-						username: config.username,
-						password: config.password
-					};
+                                if (typeof config.username === "string" && typeof config.password === "string")
+                                        requestConfig.auth = {
+                                                username: config.username,
+                                                password: config.password
+                                        };
 
-				const { data } = await axios.post(config.url, requestData, requestConfig);
+                                const { data } = await axios.post(config.url, requestData, requestConfig);
 
-				if(data.error)
-					throw new Error(`${data.error.code}: ${data.error.message}`);
+                                if (data.error)
+                                        throw new Error(`${data.error.code}: ${data.error.message}`);
 
-				return data.result;
-			};
-		}
-	});
+                                console.log(data); //TODO results
+
+                                return data.result;
+                        };
+                }
+        });
 };
