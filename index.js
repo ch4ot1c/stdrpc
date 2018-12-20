@@ -31,10 +31,12 @@ module.exports = function stdrpc(_config) {
                                         requestData.push({
                                                 jsonrpc: "2.0",
                                                 method,
-                                                p,
+                                                params: p,
                                                 id: Date.now()
                                         });
                                 }
+
+                                console.log(requestData)
 
                                 const requestConfig = {};
 
