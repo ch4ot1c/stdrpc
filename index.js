@@ -28,15 +28,13 @@ module.exports = function stdrpc(_config) {
 
                                 let requestData = []
                                 for (let p of params) {
-                                        requestData.push({
+                                        requestData = [{
                                                 jsonrpc: "2.0",
                                                 method,
                                                 params: p,
                                                 id: Date.now()
-                                        });
+                                        }, ...requestData];
                                 }
-
-                                console.log(requestData)
 
                                 const requestConfig = {};
 
@@ -51,9 +49,7 @@ module.exports = function stdrpc(_config) {
                                 if (data.error)
                                         throw new Error(`${data.error.code}: ${data.error.message}`);
 
-                                console.log(data); //TODO results
-
-                                return data.result;
+                                return data;
                         };
                 }
         });
