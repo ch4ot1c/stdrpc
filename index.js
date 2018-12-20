@@ -23,17 +23,17 @@ module.exports = function stdrpc(_config) {
                         if (typeof target[method] === "function")
                                 return target[method];
 
-                        return async (params) => {
+                        return async (...params) => {
                                 method = config.methodTransform(method);
 
                                 let requestData = []
                                 for (let p of params) {
-                                        requestData = [{
+                                        requestData.push({
                                                 jsonrpc: "2.0",
                                                 method,
                                                 p,
                                                 id: Date.now()
-                                        }, ...requestData];
+                                        });
                                 }
 
                                 const requestConfig = {};
